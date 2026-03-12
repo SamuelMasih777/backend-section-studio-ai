@@ -9,10 +9,22 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Supabase configuration (placeholders for now)
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Supabase configuration
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+let supabase: any = null;
+
+if (supabaseUrl && supabaseAnonKey && supabaseUrl.startsWith('http') && !supabaseUrl.includes('your_supabase_url_here')) {
+  try {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+    console.log('[supabase]: Client initialized successfully');
+  } catch (error) {
+    console.error('[supabase]: Failed to initialize client:', error);
+  }
+} else {
+  console.warn('[supabase]: Supabase credentials missing or invalid. Client not initialized.');
+}
 
 // Middleware
 app.use(cors());
