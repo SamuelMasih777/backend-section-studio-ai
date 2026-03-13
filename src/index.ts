@@ -39,6 +39,10 @@ const startServer = async () => {
         await sequelize.authenticate();
         console.log('[database]: Connection has been established successfully.');
         
+        // Sync models to database (creates missing tables)
+        await sequelize.sync({ alter: false }); 
+        console.log('[database]: Database models synced successfully.');
+        
         app.listen(port, () => {
             console.log(`[server]: Server is running at http://localhost:${port}`);
         });

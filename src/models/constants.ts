@@ -10,11 +10,8 @@ const constants = {
     },
     roles: {
         admin: "admin",
-        user: "user",
-        rider: "rider",
-        driver: "driver",
-        deliveryPartner: "deliveryPartner",
-        partnerUser: "partnerUser"
+        superAdmin: "superAdmin",
+        user: "user"
     },
     messageType: {
         IMAGE: "image",

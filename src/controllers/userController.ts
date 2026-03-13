@@ -1,15 +1,15 @@
 import { Request, Response } from 'express';
-import profileService from '../services/profileService';
+import userService from '../services/userService';
 import Result from '../models/result';
 import constants from '../models/constants';
 import logger from '../services/common/logger';
 
-class ProfileController {
+class UserController {
     async getMe(req: Request, res: Response) {
         const result = new Result();
         try {
-            const userId = (req as any).user.id; // From authMiddleware
-            const data = await profileService.getProfileByUserId(userId);
+            const userId = (req as any).user.id;
+            const data = await userService.getUserById(userId);
             result.data = data;
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
@@ -20,20 +20,20 @@ class ProfileController {
         res.status(result.status).json(result);
     }
 
-    async updateProfile(req: Request, res: Response) {
+    async updateMe(req: any, res: Response) {
         const result = new Result();
         try {
-            const userId = (req as any).user.id;
-            const data = await profileService.updateProfile(userId, req.body);
+            const userId = req.user.id;
+            const data = await userService.updateUser(userId, req.body);
             result.data = data;
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
             const reqId: any = req.headers['request-id'];
-            logger.error(reqId, `Error in updateProfile: ${error.message}`, {}, error);
+            logger.error(reqId, `Error in updateMe: ${error.message}`, {}, error);
         }
         res.status(result.status).json(result);
     }
 }
 
-export default new ProfileController();
+export default new UserController();

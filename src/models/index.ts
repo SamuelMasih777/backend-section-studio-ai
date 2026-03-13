@@ -2,7 +2,7 @@ import Section from './Section';
 import Category from './Category';
 import Tag from './Tag';
 import Bundle, { BundleItem } from './Bundle';
-import Profile from './Profile';
+import User from './User';
 
 // Associations
 Bundle.hasMany(BundleItem, { foreignKey: 'bundleId', as: 'items' });
@@ -17,5 +17,5 @@ export {
     Tag,
     Bundle,
     BundleItem,
-    Profile
+    User
 };
