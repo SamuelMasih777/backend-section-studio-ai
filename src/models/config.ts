@@ -7,6 +7,7 @@ const config = {
     port: process.env.PORT || 3000,
     supabaseUrl: process.env.SUPABASE_URL || "",
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || "",
+    databaseUrl: process.env.DATABASE_URL || '',
     jwtSecretKey: process.env.JWT_SECRET_KEY || "your_jwt_secret_key_here",
     roles: constants.roles,
     polygonAgencyId: (polygonId: string) => {

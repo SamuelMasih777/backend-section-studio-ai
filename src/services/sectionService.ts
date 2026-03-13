@@ -1,74 +1,83 @@
-import supabase from './common/supabase';
-import { Section } from '../models/Section';
+import { Op } from 'sequelize';
+import Section from '../models/Section';
 import CustomError from '../models/CustomError';
 import constants from '../models/constants';
 
 class SectionService {
-    async getAllSections() {
-        const { data, error } = await supabase
-            .from('sections')
-            .select('*')
-            .eq('is_deleted', false);
+    async getAllSections(filters: { category?: string; search?: string; publishStatus?: boolean } = {}) {
+        const where: any = {};
 
-        if (error) {
-            throw new CustomError(error.message, constants.httpStatus.serverError);
+        if (filters.category) {
+            where.category = filters.category;
         }
 
-        return data;
+        if (filters.search) {
+            where[Op.or] = [
+                { title: { [Op.iLike]: `%${filters.search}%` } },
+                { handle: { [Op.iLike]: `%${filters.search}%` } }
+            ];
+        }
+
+        if (filters.publishStatus !== undefined) {
+            where.isPublished = filters.publishStatus;
+        }
+
+        try {
+            const sections = await Section.findAll({ where });
+            return sections;
+        } catch (error: any) {
+            throw new CustomError(error.message, constants.httpStatus.serverError);
+        }
     }
 
     async getSectionById(id: string) {
-        const { data, error } = await supabase
-            .from('sections')
-            .select('*')
-            .eq('id', id)
-            .single();
-
-        if (error) {
-            throw new CustomError(error.message, constants.httpStatus.notFound);
+        try {
+            const section = await Section.findByPk(id);
+            if (!section) {
+                throw new CustomError('Section not found', constants.httpStatus.notFound);
+            }
+            return section;
+        } catch (error: any) {
+            if (error instanceof CustomError) throw error;
+            throw new CustomError(error.message, constants.httpStatus.serverError);
         }
-
-        return data;
     }
 
-    async createSection(sectionData: Partial<Section>) {
-        const { data, error } = await supabase
-            .from('sections')
-            .insert([sectionData])
-            .select();
-
-        if (error) {
+    async createSection(sectionData: any) {
+        try {
+            const section = await Section.create(sectionData);
+            return section;
+        } catch (error: any) {
             throw new CustomError(error.message, constants.httpStatus.badRequest);
         }
-
-        return data[0];
     }
 
-    async updateSection(id: string, sectionData: Partial<Section>) {
-        const { data, error } = await supabase
-            .from('sections')
-            .update(sectionData)
-            .eq('id', id)
-            .select();
-
-        if (error) {
+    async updateSection(id: string, sectionData: any) {
+        try {
+            const section = await Section.findByPk(id);
+            if (!section) {
+                throw new CustomError('Section not found', constants.httpStatus.notFound);
+            }
+            await section.update(sectionData);
+            return section;
+        } catch (error: any) {
+            if (error instanceof CustomError) throw error;
             throw new CustomError(error.message, constants.httpStatus.badRequest);
         }
-
-        return data[0];
     }
 
     async deleteSection(id: string) {
-        const { error } = await supabase
-            .from('sections')
-            .update({ is_deleted: true })
-            .eq('id', id);
-
-        if (error) {
+        try {
+            const section = await Section.findByPk(id);
+            if (!section) {
+                throw new CustomError('Section not found', constants.httpStatus.notFound);
+            }
+            await section.destroy();
+            return { message: "Section deleted successfully" };
+        } catch (error: any) {
+            if (error instanceof CustomError) throw error;
             throw new CustomError(error.message, constants.httpStatus.badRequest);
         }
-
-        return { message: "Section deleted successfully" };
     }
 }
 

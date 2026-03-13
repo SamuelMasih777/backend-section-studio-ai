@@ -3,6 +3,12 @@ import cors from 'cors';
 import morgan from 'morgan';
 import config from './models/config';
 import sectionRouter from './routes/sectionRouter';
+import categoryRouter from './routes/categoryRouter';
+import tagRouter from './routes/tagRouter';
+import bundleRouter from './routes/bundleRouter';
+import authRouter from './routes/authRouter';
+
+import sequelize from './models/db';
 
 const app = express();
 const port = config.port;
@@ -14,6 +20,10 @@ app.use(morgan('dev'));
 
 // Routes
 app.use('/api/sections', sectionRouter);
+app.use('/api/categories', categoryRouter);
+app.use('/api/tags', tagRouter);
+app.use('/api/bundles', bundleRouter);
+app.use('/api/auth', authRouter);
 
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Section Studio AI Backend is running!' });
@@ -24,6 +34,18 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 // Start server
-app.listen(port, () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`);
-});
+const startServer = async () => {
+    try {
+        await sequelize.authenticate();
+        console.log('[database]: Connection has been established successfully.');
+        
+        app.listen(port, () => {
+            console.log(`[server]: Server is running at http://localhost:${port}`);
+        });
+    } catch (error) {
+        console.error('[database]: Unable to connect to the database:', error);
+        process.exit(1);
+    }
+};
+
+startServer();

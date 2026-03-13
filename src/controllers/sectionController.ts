@@ -8,7 +8,13 @@ class SectionController {
     async getAllSections(req: Request, res: Response) {
         const result = new Result();
         try {
-            const data = await sectionService.getAllSections();
+            const { category, search, publishStatus } = req.query;
+            const filters = {
+                category: category as string,
+                search: search as string,
+                publishStatus: publishStatus === 'true' ? true : publishStatus === 'false' ? false : undefined
+            };
+            const data = await sectionService.getAllSections(filters);
             result.data = data;
         } catch (error: any) {
             result.status = typeof error.status === 'number' ? error.status : constants.httpStatus.serverError;
