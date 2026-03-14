@@ -10,6 +10,8 @@ export interface BundleAttributes {
     discount: number;
     thumbnailUrl: string | null;
     isActive: boolean;
+    createdAt?: string | Date;
+    updatedAt?: string | Date;
 }
 
 export class Bundle extends Model<BundleAttributes> implements BundleAttributes {

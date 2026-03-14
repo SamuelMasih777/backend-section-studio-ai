@@ -7,6 +7,7 @@ import categoryRouter from './routes/categoryRouter';
 import tagRouter from './routes/tagRouter';
 import bundleRouter from './routes/bundleRouter';
 import authRouter from './routes/authRouter';
+import statsRouter from './routes/statsRouter';
 
 import sequelize from './models/db';
 
@@ -24,6 +25,7 @@ app.use('/api/categories', categoryRouter);
 app.use('/api/tags', tagRouter);
 app.use('/api/bundles', bundleRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/stats', statsRouter);
 
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Section Studio AI Backend is running!' });

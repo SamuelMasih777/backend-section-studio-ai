@@ -18,6 +18,8 @@ export interface SectionAttributes {
     sortOrder: number;
     compareAtPrice: number | null;
     presetsCount: number;
+    createdAt?: string | Date;
+    updatedAt?: string | Date;
 }
 
 export class Section extends Model<SectionAttributes> implements SectionAttributes {
