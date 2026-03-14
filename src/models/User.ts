@@ -8,6 +8,9 @@ export interface UserAttributes {
     display_name?: string | null;
     role: string;
     isSuperAdmin: boolean;
+    updatedBy?: { name: string, role: string } | null;
+    createdAt?: string | Date;
+    updatedAt?: string | Date;
 }
 
 export class User extends Model<UserAttributes> implements UserAttributes {
@@ -17,6 +20,7 @@ export class User extends Model<UserAttributes> implements UserAttributes {
     public display_name!: string | null;
     public role!: string;
     public isSuperAdmin!: boolean;
+    public updatedBy!: { name: string, role: string } | null;
 
     public readonly createdAt!: string;
     public readonly updatedAt!: string;
@@ -51,6 +55,10 @@ User.init({
     isSuperAdmin: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+    updatedBy: {
+        type: DataTypes.JSONB,
+        allowNull: true
     }
 }, {
     sequelize,

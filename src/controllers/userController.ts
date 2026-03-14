@@ -34,6 +34,31 @@ class UserController {
         }
         res.status(result.status).json(result);
     }
+
+    async getAllUsers(req: Request, res: Response) {
+        const result = new Result();
+        try {
+            const { page, limit } = req.query;
+            const filters = {
+                page: page ? parseInt(page as string) : undefined,
+                limit: limit ? parseInt(limit as string) : undefined
+            };
+            const { users, totalCount, totalPages, currentPage } = await userService.getAllUsers(filters);
+            result.data = users;
+            result.pagination = {
+                totalCount,
+                totalPages,
+                currentPage,
+                limit: filters.limit || 10
+            };
+        } catch (error: any) {
+            result.status = error.status || constants.httpStatus.serverError;
+            result.message = error.message;
+            const reqId: any = req.headers['request-id'];
+            logger.error(reqId, `Error in getAllUsers: ${error.message}`, {}, error);
+        }
+        res.status(result.status).json(result);
+    }
 }
 
 export default new UserController();

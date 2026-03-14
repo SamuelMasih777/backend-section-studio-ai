@@ -8,14 +8,22 @@ class SectionController {
     async getAllSections(req: Request, res: Response) {
         const result = new Result();
         try {
-            const { category, search, publishStatus } = req.query;
+            const { category, search, publishStatus, page, limit } = req.query;
             const filters = {
                 category: category as string,
                 search: search as string,
-                publishStatus: publishStatus === 'true' ? true : publishStatus === 'false' ? false : undefined
+                publishStatus: publishStatus === 'true' ? true : publishStatus === 'false' ? false : undefined,
+                page: page ? parseInt(page as string) : undefined,
+                limit: limit ? parseInt(limit as string) : undefined
             };
-            const data = await sectionService.getAllSections(filters);
-            result.data = data;
+            const { sections, totalCount, totalPages, currentPage } = await sectionService.getAllSections(filters);
+            result.data = sections;
+            result.pagination = {
+                totalCount,
+                totalPages,
+                currentPage,
+                limit: filters.limit || 10
+            };
         } catch (error: any) {
             result.status = typeof error.status === 'number' ? error.status : constants.httpStatus.serverError;
             result.message = error.message;
@@ -43,7 +51,11 @@ class SectionController {
     async createSection(req: Request, res: Response) {
         const result = new Result();
         try {
-            const data = await sectionService.createSection(req.body);
+            const updatedBy = {
+                name: (req as any).user.display_name,
+                role: (req as any).user.role
+            };
+            const data = await sectionService.createSection({ ...req.body, updatedBy });
             result.data = data;
             result.status = constants.httpStatus.created;
         } catch (error: any) {
@@ -59,7 +71,11 @@ class SectionController {
         const result = new Result();
         try {
             const id: any = req.params.id;
-            const data = await sectionService.updateSection(id, req.body);
+            const updatedBy = {
+                name: (req as any).user.display_name,
+                role: (req as any).user.role
+            };
+            const data = await sectionService.updateSection(id, { ...req.body, updatedBy });
             result.data = data;
         } catch (error: any) {
             result.status = typeof error.status === 'number' ? error.status : constants.httpStatus.serverError;

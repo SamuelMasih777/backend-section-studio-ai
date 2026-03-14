@@ -9,6 +9,9 @@ export interface TagAttributes {
     description: string | null;
     sortOrder: number;
     isActive: boolean;
+    updatedBy?: { name: string, role: string } | null;
+    createdAt?: string | Date;
+    updatedAt?: string | Date;
 }
 
 export class Tag extends Model<TagAttributes> implements TagAttributes {
@@ -19,6 +22,7 @@ export class Tag extends Model<TagAttributes> implements TagAttributes {
     public description!: string | null;
     public sortOrder!: number;
     public isActive!: boolean;
+    public updatedBy!: { name: string, role: string } | null;
 
     public readonly createdAt!: string;
     public readonly updatedAt!: string;
@@ -49,6 +53,10 @@ Tag.init({
     isActive: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
+    },
+    updatedBy: {
+        type: DataTypes.JSONB,
+        allowNull: true
     }
 }, {
     sequelize,

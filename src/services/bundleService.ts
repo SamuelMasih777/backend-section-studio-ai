@@ -3,12 +3,25 @@ import CustomError from '../models/CustomError';
 import constants from '../models/constants';
 
 class BundleService {
-    async getAllBundles() {
+    async getAllBundles(filters: { page?: number; limit?: number } = {}) {
+        const page = filters.page || 1;
+        const limit = filters.limit || 10;
+        const offset = (page - 1) * limit;
+
         try {
-            const bundles = await Bundle.findAll({
-                where: { isActive: true }
+            const { count, rows } = await Bundle.findAndCountAll({
+                where: { isActive: true },
+                limit,
+                offset,
+                order: [['createdAt', 'DESC']]
             });
-            return bundles;
+            
+            return {
+                bundles: rows,
+                totalCount: count,
+                totalPages: Math.ceil(count / limit),
+                currentPage: page
+            };
         } catch (error: any) {
             throw new CustomError(error.message, constants.httpStatus.serverError);
         }

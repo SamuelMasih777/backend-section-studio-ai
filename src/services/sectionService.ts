@@ -4,7 +4,7 @@ import CustomError from '../models/CustomError';
 import constants from '../models/constants';
 
 class SectionService {
-    async getAllSections(filters: { category?: string; search?: string; publishStatus?: boolean } = {}) {
+    async getAllSections(filters: { category?: string; search?: string; publishStatus?: boolean; page?: number; limit?: number } = {}) {
         const where: any = {};
 
         if (filters.category) {
@@ -22,9 +22,24 @@ class SectionService {
             where.isPublished = filters.publishStatus;
         }
 
+        const page = filters.page || 1;
+        const limit = filters.limit || 10;
+        const offset = (page - 1) * limit;
+
         try {
-            const sections = await Section.findAll({ where });
-            return sections;
+            const { count, rows } = await Section.findAndCountAll({
+                where,
+                limit,
+                offset,
+                order: [['createdAt', 'DESC']]
+            });
+            
+            return {
+                sections: rows,
+                totalCount: count,
+                totalPages: Math.ceil(count / limit),
+                currentPage: page
+            };
         } catch (error: any) {
             throw new CustomError(error.message, constants.httpStatus.serverError);
         }

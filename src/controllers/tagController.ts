@@ -8,8 +8,19 @@ class TagController {
     async getAllTags(req: Request, res: Response) {
         const result = new Result();
         try {
-            const data = await tagService.getAllTags();
-            result.data = data;
+            const { page, limit } = req.query;
+            const filters = {
+                page: page ? parseInt(page as string) : undefined,
+                limit: limit ? parseInt(limit as string) : undefined
+            };
+            const { tags, totalCount, totalPages, currentPage } = await tagService.getAllTags(filters);
+            result.data = tags;
+            result.pagination = {
+                totalCount,
+                totalPages,
+                currentPage,
+                limit: filters.limit || 10
+            };
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
@@ -37,7 +48,11 @@ class TagController {
     async createTag(req: Request, res: Response) {
         const result = new Result();
         try {
-            const data = await tagService.createTag(req.body);
+            const updatedBy = {
+                name: (req as any).user.display_name,
+                role: (req as any).user.role
+            };
+            const data = await tagService.createTag({ ...req.body, updatedBy });
             result.data = data;
             result.status = constants.httpStatus.created;
         } catch (error: any) {
@@ -53,7 +68,11 @@ class TagController {
         const result = new Result();
         try {
             const handle: any = req.params.handle;
-            const data = await tagService.updateTag(handle, req.body);
+            const updatedBy = {
+                name: (req as any).user.display_name,
+                role: (req as any).user.role
+            };
+            const data = await tagService.updateTag(handle, { ...req.body, updatedBy });
             result.data = data;
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;

@@ -10,6 +10,7 @@ export interface BundleAttributes {
     discount: number;
     thumbnailUrl: string | null;
     isActive: boolean;
+    updatedBy?: { name: string, role: string } | null;
     createdAt?: string | Date;
     updatedAt?: string | Date;
 }
@@ -23,6 +24,7 @@ export class Bundle extends Model<BundleAttributes> implements BundleAttributes 
     public discount!: number;
     public thumbnailUrl!: string | null;
     public isActive!: boolean;
+    public updatedBy!: { name: string, role: string } | null;
 
     public readonly createdAt!: string;
     public readonly updatedAt!: string;
@@ -61,6 +63,10 @@ Bundle.init({
     isActive: {
         type: DataTypes.BOOLEAN,
         defaultValue: true
+    },
+    updatedBy: {
+        type: DataTypes.JSONB,
+        allowNull: true
     }
 }, {
     sequelize,
@@ -73,12 +79,19 @@ export interface BundleItemAttributes {
     id?: number;
     bundleId: string;
     sectionId: string;
+    updatedBy?: { name: string, role: string } | null;
+    createdAt?: string | Date;
+    updatedAt?: string | Date;
 }
 
 export class BundleItem extends Model<BundleItemAttributes> implements BundleItemAttributes {
     public id!: number;
     public bundleId!: string;
     public sectionId!: string;
+    public updatedBy!: { name: string, role: string } | null;
+
+    public readonly createdAt!: string;
+    public readonly updatedAt!: string;
 }
 
 BundleItem.init({
@@ -94,6 +107,10 @@ BundleItem.init({
     sectionId: {
         type: DataTypes.UUID,
         allowNull: false
+    },
+    updatedBy: {
+        type: DataTypes.JSONB,
+        allowNull: true
     }
 }, {
     sequelize,

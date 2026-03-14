@@ -3,13 +3,25 @@ import CustomError from '../models/CustomError';
 import constants from '../models/constants';
 
 class CategoryService {
-    async getAllCategories() {
+    async getAllCategories(filters: { page?: number; limit?: number } = {}) {
+        const page = filters.page || 1;
+        const limit = filters.limit || 10;
+        const offset = (page - 1) * limit;
+
         try {
-            const categories = await Category.findAll({
+            const { count, rows } = await Category.findAndCountAll({
                 where: { isActive: true },
+                limit,
+                offset,
                 order: [['sortOrder', 'ASC']]
             });
-            return categories;
+            
+            return {
+                categories: rows,
+                totalCount: count,
+                totalPages: Math.ceil(count / limit),
+                currentPage: page
+            };
         } catch (error: any) {
             throw new CustomError(error.message, constants.httpStatus.serverError);
         }

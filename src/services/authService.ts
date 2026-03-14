@@ -24,7 +24,7 @@ class AuthService {
             email,
             password: hashedPassword,
             display_name: displayName || email.split('@')[0],
-            role: 'user',
+            role: constants.roles.admin,
             isSuperAdmin: false
         });
 
@@ -43,7 +43,7 @@ class AuthService {
         }
 
         const token = jwt.sign(
-            { id: user.id, role: user.role, isSuperAdmin: user.isSuperAdmin },
+            { id: user.id, role: user.role, isSuperAdmin: user.isSuperAdmin, display_name: user.display_name },
             config.jwtSecretKey,
             { expiresIn: '24h' }
         );

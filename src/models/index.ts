@@ -15,11 +15,11 @@ Section.hasMany(BundleItem, { foreignKey: 'sectionId' });
 User.hasMany(Purchase, { foreignKey: 'userId', as: 'purchases' });
 Purchase.belongsTo(User, { foreignKey: 'userId' });
 
-Section.hasMany(Purchase, { foreignKey: 'sectionId', as: 'purchases' });
-Purchase.belongsTo(Section, { foreignKey: 'sectionId' });
+Section.hasMany(Purchase, { foreignKey: 'sectionId', as: 'purchases', constraints: false });
+Purchase.belongsTo(Section, { foreignKey: 'sectionId', constraints: false });
 
-Bundle.hasMany(Purchase, { foreignKey: 'bundleId', as: 'purchases' });
-Purchase.belongsTo(Bundle, { foreignKey: 'bundleId' });
+Bundle.hasMany(Purchase, { foreignKey: 'bundleId', as: 'purchases', constraints: false });
+Purchase.belongsTo(Bundle, { foreignKey: 'bundleId', constraints: false });
 
 export {
     Section,

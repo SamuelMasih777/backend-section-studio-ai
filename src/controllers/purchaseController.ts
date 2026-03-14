@@ -29,6 +29,11 @@ class PurchaseController {
             // Example: const chargeData = await shopify.billing.check(charge_id); 
             // if (chargeData.status !== 'active') throw new Error("Charge not active");
 
+            const updatedBy = {
+                name: (req as any).user.display_name,
+                role: (req as any).user.role
+            };
+
             const purchase = await Purchase.create({
                 userId,
                 chargeId: charge_id,
@@ -36,7 +41,8 @@ class PurchaseController {
                 bundleId: bundleId || null,
                 amount,
                 currency: currency || 'USD',
-                status: 'active'
+                status: 'active',
+                updatedBy
             });
 
             result.data = purchase;

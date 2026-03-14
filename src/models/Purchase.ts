@@ -13,6 +13,7 @@ export interface PurchaseAttributes {
     amount: number;
     currency: string;
     status: string; // e.g., 'active', 'declined', 'expired'
+    updatedBy?: { name: string, role: string } | null;
     createdAt?: string | Date;
     updatedAt?: string | Date;
 }
@@ -26,6 +27,7 @@ export class Purchase extends Model<PurchaseAttributes> implements PurchaseAttri
     public amount!: number;
     public currency!: string;
     public status!: string;
+    public updatedBy!: { name: string, role: string } | null;
 
     public readonly createdAt!: string;
     public readonly updatedAt!: string;
@@ -42,11 +44,11 @@ Purchase.init({
         allowNull: false
     },
     sectionId: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING,
         allowNull: true
     },
     bundleId: {
-        type: DataTypes.UUID,
+        type: DataTypes.STRING,
         allowNull: true
     },
     chargeId: {
@@ -65,6 +67,10 @@ Purchase.init({
         type: DataTypes.STRING,
         allowNull: false,
         defaultValue: 'active'
+    },
+    updatedBy: {
+        type: DataTypes.JSONB,
+        allowNull: true
     }
 }, {
     sequelize,

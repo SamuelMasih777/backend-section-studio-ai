@@ -8,8 +8,19 @@ class BundleController {
     async getAllBundles(req: Request, res: Response) {
         const result = new Result();
         try {
-            const data = await bundleService.getAllBundles();
-            result.data = data;
+            const { page, limit } = req.query;
+            const filters = {
+                page: page ? parseInt(page as string) : undefined,
+                limit: limit ? parseInt(limit as string) : undefined
+            };
+            const { bundles, totalCount, totalPages, currentPage } = await bundleService.getAllBundles(filters);
+            result.data = bundles;
+            result.pagination = {
+                totalCount,
+                totalPages,
+                currentPage,
+                limit: filters.limit || 10
+            };
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
@@ -38,7 +49,11 @@ class BundleController {
         const result = new Result();
         try {
             const { sectionIds, ...bundleData } = req.body;
-            const data = await bundleService.createBundle(bundleData, sectionIds);
+            const updatedBy = {
+                name: (req as any).user.display_name,
+                role: (req as any).user.role
+            };
+            const data = await bundleService.createBundle({ ...bundleData, updatedBy }, sectionIds);
             result.data = data;
             result.status = constants.httpStatus.created;
         } catch (error: any) {
@@ -54,7 +69,11 @@ class BundleController {
         const result = new Result();
         try {
             const id: any = req.params.id;
-            const data = await bundleService.updateBundle(id, req.body);
+            const updatedBy = {
+                name: (req as any).user.display_name,
+                role: (req as any).user.role
+            };
+            const data = await bundleService.updateBundle(id, { ...req.body, updatedBy });
             result.data = data;
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;

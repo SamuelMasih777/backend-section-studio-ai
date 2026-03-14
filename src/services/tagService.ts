@@ -3,13 +3,25 @@ import CustomError from '../models/CustomError';
 import constants from '../models/constants';
 
 class TagService {
-    async getAllTags() {
+    async getAllTags(filters: { page?: number; limit?: number } = {}) {
+        const page = filters.page || 1;
+        const limit = filters.limit || 10;
+        const offset = (page - 1) * limit;
+
         try {
-            const tags = await Tag.findAll({
+            const { count, rows } = await Tag.findAndCountAll({
                 where: { isActive: true },
+                limit,
+                offset,
                 order: [['sortOrder', 'ASC']]
             });
-            return tags;
+            
+            return {
+                tags: rows,
+                totalCount: count,
+                totalPages: Math.ceil(count / limit),
+                currentPage: page
+            };
         } catch (error: any) {
             throw new CustomError(error.message, constants.httpStatus.serverError);
         }

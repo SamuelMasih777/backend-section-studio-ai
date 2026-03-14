@@ -8,8 +8,19 @@ class CategoryController {
     async getAllCategories(req: Request, res: Response) {
         const result = new Result();
         try {
-            const data = await categoryService.getAllCategories();
-            result.data = data;
+            const { page, limit } = req.query;
+            const filters = {
+                page: page ? parseInt(page as string) : undefined,
+                limit: limit ? parseInt(limit as string) : undefined
+            };
+            const { categories, totalCount, totalPages, currentPage } = await categoryService.getAllCategories(filters);
+            result.data = categories;
+            result.pagination = {
+                totalCount,
+                totalPages,
+                currentPage,
+                limit: filters.limit || 10
+            };
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
@@ -37,7 +48,11 @@ class CategoryController {
     async createCategory(req: Request, res: Response) {
         const result = new Result();
         try {
-            const data = await categoryService.createCategory(req.body);
+            const updatedBy = {
+                name: (req as any).user.display_name,
+                role: (req as any).user.role
+            };
+            const data = await categoryService.createCategory({ ...req.body, updatedBy });
             result.data = data;
             result.status = constants.httpStatus.created;
         } catch (error: any) {
@@ -53,7 +68,11 @@ class CategoryController {
         const result = new Result();
         try {
             const handle: any = req.params.handle;
-            const data = await categoryService.updateCategory(handle, req.body);
+            const updatedBy = {
+                name: (req as any).user.display_name,
+                role: (req as any).user.role
+            };
+            const data = await categoryService.updateCategory(handle, { ...req.body, updatedBy });
             result.data = data;
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
