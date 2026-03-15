@@ -15,6 +15,7 @@ class CategoryController {
             };
             const { categories, totalCount, totalPages, currentPage } = await categoryService.getAllCategories(filters);
             result.data = categories;
+            result.message = "Categories retrieved successfully";
             result.pagination = {
                 totalCount,
                 totalPages,
@@ -36,6 +37,7 @@ class CategoryController {
             const handle: any = req.params.handle;
             const data = await categoryService.getCategoryByHandle(handle);
             result.data = data;
+            result.message = "Category retrieved successfully";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
@@ -55,6 +57,7 @@ class CategoryController {
             const data = await categoryService.createCategory({ ...req.body, updatedBy });
             result.data = data;
             result.status = constants.httpStatus.created;
+            result.message = "Category created successfully";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
@@ -74,6 +77,7 @@ class CategoryController {
             };
             const data = await categoryService.updateCategory(handle, { ...req.body, updatedBy });
             result.data = data;
+            result.message = "Category updated successfully";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
@@ -89,6 +93,7 @@ class CategoryController {
             const handle: any = req.params.handle;
             const data = await categoryService.deleteCategory(handle);
             result.data = data;
+            result.message = "Category deleted successfully";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;

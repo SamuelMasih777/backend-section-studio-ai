@@ -11,6 +11,7 @@ class UserController {
             const userId = (req as any).user.id;
             const data = await userService.getUserById(userId);
             result.data = data;
+            result.message = "User profile retrieved successfully";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
@@ -26,6 +27,7 @@ class UserController {
             const userId = req.user.id;
             const data = await userService.updateUser(userId, req.body);
             result.data = data;
+            result.message = "User profile updated successfully";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
@@ -45,6 +47,7 @@ class UserController {
             };
             const { users, totalCount, totalPages, currentPage } = await userService.getAllUsers(filters);
             result.data = users;
+            result.message = "Users retrieved successfully";
             result.pagination = {
                 totalCount,
                 totalPages,

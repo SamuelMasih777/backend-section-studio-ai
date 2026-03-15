@@ -46,6 +46,7 @@ class PurchaseController {
             });
 
             result.data = purchase;
+            result.message = "Purchase saved successfully";
             res.status(constants.httpStatus.created).json(result);
 
         } catch (error: any) {

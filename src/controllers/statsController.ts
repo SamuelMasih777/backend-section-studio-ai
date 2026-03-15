@@ -12,6 +12,7 @@ class StatsController {
         try {
             const data = await serviceMethod();
             result.data = data;
+            result.message = "Stats retrieved successfully";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;

@@ -15,6 +15,7 @@ class TagController {
             };
             const { tags, totalCount, totalPages, currentPage } = await tagService.getAllTags(filters);
             result.data = tags;
+            result.message = "Tags retrieved successfully";
             result.pagination = {
                 totalCount,
                 totalPages,
@@ -36,6 +37,7 @@ class TagController {
             const handle: any = req.params.handle;
             const data = await tagService.getTagByHandle(handle);
             result.data = data;
+            result.message = "Tag retrieved successfully";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
@@ -55,6 +57,7 @@ class TagController {
             const data = await tagService.createTag({ ...req.body, updatedBy });
             result.data = data;
             result.status = constants.httpStatus.created;
+            result.message = "Tag created successfully";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
@@ -74,6 +77,7 @@ class TagController {
             };
             const data = await tagService.updateTag(handle, { ...req.body, updatedBy });
             result.data = data;
+            result.message = "Tag updated successfully";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
@@ -89,6 +93,7 @@ class TagController {
             const handle: any = req.params.handle;
             const data = await tagService.deleteTag(handle);
             result.data = data;
+            result.message = "Tag deleted successfully";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;

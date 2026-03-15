@@ -8,7 +8,7 @@ export interface TagAttributes {
     imageUrl: string | null;
     description: string | null;
     sortOrder: number;
-    isActive: boolean;
+    isActive?: boolean;
     updatedBy?: { name: string, role: string } | null;
     createdAt?: string | Date;
     updatedAt?: string | Date;

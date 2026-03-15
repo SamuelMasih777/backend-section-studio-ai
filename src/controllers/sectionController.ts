@@ -18,6 +18,7 @@ class SectionController {
             };
             const { sections, totalCount, totalPages, currentPage } = await sectionService.getAllSections(filters);
             result.data = sections;
+            result.message = "Sections retrieved successfully";
             result.pagination = {
                 totalCount,
                 totalPages,
@@ -39,6 +40,7 @@ class SectionController {
             const id: any = req.params.id;
             const data = await sectionService.getSectionById(id);
             result.data = data;
+            result.message = "Section retrieved successfully";
         } catch (error: any) {
             result.status = typeof error.status === 'number' ? error.status : constants.httpStatus.serverError;
             result.message = error.message;
@@ -58,6 +60,7 @@ class SectionController {
             const data = await sectionService.createSection({ ...req.body, updatedBy });
             result.data = data;
             result.status = constants.httpStatus.created;
+            result.message = "Section created successfully";
         } catch (error: any) {
             result.status = typeof error.status === 'number' ? error.status : constants.httpStatus.serverError;
             result.message = error.message;
@@ -77,6 +80,8 @@ class SectionController {
             };
             const data = await sectionService.updateSection(id, { ...req.body, updatedBy });
             result.data = data;
+            result.status = constants.httpStatus.success;
+            result.message = "Section updated successfully";
         } catch (error: any) {
             result.status = typeof error.status === 'number' ? error.status : constants.httpStatus.serverError;
             result.message = error.message;
@@ -92,6 +97,7 @@ class SectionController {
             const id: any = req.params.id;
             const data = await sectionService.deleteSection(id);
             result.data = data;
+            result.message = "Section deleted successfully";
         } catch (error: any) {
             result.status = typeof error.status === 'number' ? error.status : constants.httpStatus.serverError;
             result.message = error.message;

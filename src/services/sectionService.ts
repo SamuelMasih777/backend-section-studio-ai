@@ -21,6 +21,8 @@ class SectionService {
         if (filters.publishStatus !== undefined) {
             where.isPublished = filters.publishStatus;
         }
+        
+        where.isActive = true;
 
         const page = filters.page || 1;
         const limit = filters.limit || 10;
@@ -33,7 +35,7 @@ class SectionService {
                 offset,
                 order: [['createdAt', 'DESC']]
             });
-            
+
             return {
                 sections: rows,
                 totalCount: count,
@@ -47,7 +49,9 @@ class SectionService {
 
     async getSectionById(id: string) {
         try {
-            const section = await Section.findByPk(id);
+            const section = await Section.findOne({
+                where: { id, isActive: true }
+            });
             if (!section) {
                 throw new CustomError('Section not found', constants.httpStatus.notFound);
             }
@@ -61,10 +65,38 @@ class SectionService {
     async createSection(sectionData: any) {
         try {
             const section = await Section.create(sectionData);
-            return section;
+            return section.get({ plain: true });
         } catch (error: any) {
             throw new CustomError(error.message, constants.httpStatus.badRequest);
         }
+    }
+
+    private normalizeData(data: any) {
+        const normalized = { ...data };
+        
+        // Handle tags sent as JSON string from multipart/form-data
+        if (typeof normalized.tags === 'string') {
+            try {
+                normalized.tags = JSON.parse(normalized.tags);
+            } catch (e) {
+                // If not valid JSON, maybe it's a comma separated string?
+                normalized.tags = normalized.tags.split(',').map((t: string) => t.trim());
+            }
+        }
+
+        // Handle boolean casting from strings
+        if (normalized.isFeatured === 'true') normalized.isFeatured = true;
+        if (normalized.isFeatured === 'false') normalized.isFeatured = false;
+        if (normalized.isPublished === 'true') normalized.isPublished = true;
+        if (normalized.isPublished === 'false') normalized.isPublished = false;
+
+        // Handle number casting from strings
+        if (typeof normalized.price === 'string') normalized.price = parseFloat(normalized.price);
+        if (typeof normalized.sortOrder === 'string') normalized.sortOrder = parseInt(normalized.sortOrder, 10);
+        if (typeof normalized.presetsCount === 'string') normalized.presetsCount = parseInt(normalized.presetsCount, 10);
+        if (typeof normalized.compareAtPrice === 'string') normalized.compareAtPrice = parseFloat(normalized.compareAtPrice);
+
+        return normalized;
     }
 
     async updateSection(id: string, sectionData: any) {
@@ -73,8 +105,10 @@ class SectionService {
             if (!section) {
                 throw new CustomError('Section not found', constants.httpStatus.notFound);
             }
-            await section.update(sectionData);
-            return section;
+            
+            const normalizedData = this.normalizeData(sectionData);
+            const updatedSection = await section.update(normalizedData);
+            return updatedSection.get({ plain: true });
         } catch (error: any) {
             if (error instanceof CustomError) throw error;
             throw new CustomError(error.message, constants.httpStatus.badRequest);
@@ -87,7 +121,7 @@ class SectionService {
             if (!section) {
                 throw new CustomError('Section not found', constants.httpStatus.notFound);
             }
-            await section.destroy();
+            await section.update({ isActive: false });
             return { message: "Section deleted successfully" };
         } catch (error: any) {
             if (error instanceof CustomError) throw error;

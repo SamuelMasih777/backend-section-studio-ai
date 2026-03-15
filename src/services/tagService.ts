@@ -15,7 +15,7 @@ class TagService {
                 offset,
                 order: [['sortOrder', 'ASC']]
             });
-            
+
             return {
                 tags: rows,
                 totalCount: count,
@@ -29,7 +29,9 @@ class TagService {
 
     async getTagByHandle(handle: string) {
         try {
-            const tag = await Tag.findByPk(handle);
+            const tag = await Tag.findOne({
+                where: { handle, isActive: true }
+            });
             if (!tag) {
                 throw new CustomError('Tag not found', constants.httpStatus.notFound);
             }
@@ -43,7 +45,7 @@ class TagService {
     async createTag(tagData: any) {
         try {
             const tag = await Tag.create(tagData);
-            return tag;
+            return tag.get({ plain: true });
         } catch (error: any) {
             throw new CustomError(error.message, constants.httpStatus.badRequest);
         }
@@ -55,8 +57,8 @@ class TagService {
             if (!tag) {
                 throw new CustomError('Tag not found', constants.httpStatus.notFound);
             }
-            await tag.update(tagData);
-            return tag;
+            const updatedTag = await tag.update(tagData);
+            return updatedTag.get({ plain: true });
         } catch (error: any) {
             if (error instanceof CustomError) throw error;
             throw new CustomError(error.message, constants.httpStatus.badRequest);
@@ -69,7 +71,7 @@ class TagService {
             if (!tag) {
                 throw new CustomError('Tag not found', constants.httpStatus.notFound);
             }
-            await tag.destroy();
+            await tag.update({ isActive: false });
             return { message: "Tag deleted successfully" };
         } catch (error: any) {
             if (error instanceof CustomError) throw error;

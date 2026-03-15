@@ -15,7 +15,7 @@ class BundleService {
                 offset,
                 order: [['createdAt', 'DESC']]
             });
-            
+
             return {
                 bundles: rows,
                 totalCount: count,
@@ -29,7 +29,8 @@ class BundleService {
 
     async getBundleById(id: string) {
         try {
-            const bundle = await Bundle.findByPk(id, {
+            const bundle = await Bundle.findOne({
+                where: { id, isActive: true },
                 include: [{
                     model: BundleItem,
                     as: 'items',
@@ -73,8 +74,8 @@ class BundleService {
             if (!bundle) {
                 throw new CustomError('Bundle not found', constants.httpStatus.notFound);
             }
-            await bundle.update(bundleData);
-            return bundle;
+            const updatedBundle = await bundle.update(bundleData);
+            return updatedBundle.get({ plain: true });
         } catch (error: any) {
             if (error instanceof CustomError) throw error;
             throw new CustomError(error.message, constants.httpStatus.badRequest);
@@ -87,7 +88,7 @@ class BundleService {
             if (!bundle) {
                 throw new CustomError('Bundle not found', constants.httpStatus.notFound);
             }
-            await bundle.destroy();
+            await bundle.update({ isActive: false });
             return { message: "Bundle deleted successfully" };
         } catch (error: any) {
             if (error instanceof CustomError) throw error;

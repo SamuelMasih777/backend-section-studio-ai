@@ -18,6 +18,7 @@ export interface SectionAttributes {
     sortOrder: number;
     compareAtPrice: number | null;
     presetsCount: number;
+    isActive?: boolean;
     updatedBy?: { name: string, role: string } | null;
     createdAt?: string | Date;
     updatedAt?: string | Date;
@@ -40,6 +41,7 @@ export class Section extends Model<SectionAttributes> implements SectionAttribut
     public sortOrder!: number;
     public compareAtPrice!: number | null;
     public presetsCount!: number;
+    public isActive!: boolean;
     public updatedBy!: { name: string, role: string } | null;
 
     public readonly createdAt!: string;
@@ -111,6 +113,10 @@ Section.init({
     updatedBy: {
         type: DataTypes.JSONB,
         allowNull: true
+    },
+    isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
     }
 }, {
     sequelize,

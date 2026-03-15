@@ -8,10 +8,10 @@ class StatsService {
     async getSummary() {
         try {
             const [totalSections, totalCategories, totalTags, totalBundles] = await Promise.all([
-                Section.count(),
-                Category.count(),
-                Tag.count(),
-                Bundle.count()
+                Section.count({ where: { isActive: true } }),
+                Category.count({ where: { isActive: true } }),
+                Tag.count({ where: { isActive: true } }),
+                Bundle.count({ where: { isActive: true } })
             ]);
 
             return {
@@ -28,6 +28,7 @@ class StatsService {
     async getRecentSections(limit: number = 5) {
         try {
             const sections = await Section.findAll({
+                where: { isActive: true },
                 order: [['updatedAt', 'DESC']],
                 limit: limit,
                 attributes: ['id', 'title', 'handle', 'category', 'isPublished', 'updatedAt']
@@ -41,6 +42,7 @@ class StatsService {
     async getTopCategories(limit: number = 5) {
         try {
             const categories = await Section.findAll({
+                where: { isActive: true },
                 attributes: [
                     'category',
                     [fn('COUNT', col('id')), 'sectionCount']
@@ -135,6 +137,7 @@ class StatsService {
                     [fn('COUNT', col('id')), 'count']
                 ],
                 where: {
+                    isActive: true,
                     createdAt: {
                         [Op.gte]: thirtyDaysAgo
                     }
@@ -153,7 +156,10 @@ class StatsService {
             // Assuming tags are an array of strings in the Section model.
             // Sequelize doesn't natively group by array elements easily across all dialects without specific raw queries.
             // We'll fetch all tags from active sections and count them in memory, which is fine for moderate datasets.
-            const sections = await Section.findAll({ attributes: ['tags'] });
+            const sections = await Section.findAll({ 
+                where: { isActive: true },
+                attributes: ['tags'] 
+            });
             
             const tagCounts: { [key: string]: number } = {};
             sections.forEach(section => {

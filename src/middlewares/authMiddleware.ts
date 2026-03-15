@@ -25,7 +25,7 @@ const auth = (roles: string[] = []) => {
                     user.role = decoded.role;
                     req.user = user;
                     req.headers["userId"] = user.id;
-
+                    // console.log("user", user);
                     return next();
                 }
                 return res.sendStatus(httpStatus.unauthorized);

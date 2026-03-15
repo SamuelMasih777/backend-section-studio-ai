@@ -9,7 +9,7 @@ export interface BundleAttributes {
     price: number;
     discount: number;
     thumbnailUrl: string | null;
-    isActive: boolean;
+    isActive?: boolean;
     updatedBy?: { name: string, role: string } | null;
     createdAt?: string | Date;
     updatedAt?: string | Date;

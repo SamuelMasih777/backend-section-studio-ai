@@ -11,6 +11,7 @@ class AuthController {
             const data = await authService.signup(req.body);
             result.data = data;
             result.status = constants.httpStatus.created;
+            result.message = "Signup successful";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
@@ -26,6 +27,7 @@ class AuthController {
             const { email, password } = req.body;
             const data = await authService.login(email, password);
             result.data = data;
+            result.message = "Login successful";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.unauthorized;
             result.message = error.message;

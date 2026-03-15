@@ -15,6 +15,7 @@ class BundleController {
             };
             const { bundles, totalCount, totalPages, currentPage } = await bundleService.getAllBundles(filters);
             result.data = bundles;
+            result.message = "Bundles retrieved successfully";
             result.pagination = {
                 totalCount,
                 totalPages,
@@ -36,6 +37,7 @@ class BundleController {
             const id: any = req.params.id;
             const data = await bundleService.getBundleById(id);
             result.data = data;
+            result.message = "Bundle retrieved successfully";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
@@ -56,6 +58,7 @@ class BundleController {
             const data = await bundleService.createBundle({ ...bundleData, updatedBy }, sectionIds);
             result.data = data;
             result.status = constants.httpStatus.created;
+            result.message = "Bundle created successfully";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
@@ -75,6 +78,7 @@ class BundleController {
             };
             const data = await bundleService.updateBundle(id, { ...req.body, updatedBy });
             result.data = data;
+            result.message = "Bundle updated successfully";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;
@@ -90,6 +94,7 @@ class BundleController {
             const id: any = req.params.id;
             const data = await bundleService.deleteBundle(id);
             result.data = data;
+            result.message = "Bundle deleted successfully";
         } catch (error: any) {
             result.status = error.status || constants.httpStatus.serverError;
             result.message = error.message;

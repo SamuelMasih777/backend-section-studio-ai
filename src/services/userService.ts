@@ -5,7 +5,8 @@ import constants from '../models/constants';
 class UserService {
     async getUserById(id: string) {
         try {
-            const user = await User.findByPk(id, {
+            const user = await User.findOne({
+                where: { id, isActive: true },
                 attributes: { exclude: ['password'] }
             });
             if (!user) {
@@ -28,11 +29,12 @@ class UserService {
             delete userData.password;
             delete userData.email;
             delete userData.isSuperAdmin;
-            
+
             await user.update(userData);
-            return await User.findByPk(id, {
+            const updatedUser = await User.findByPk(id, {
                 attributes: { exclude: ['password'] }
             });
+            return updatedUser ? updatedUser.get({ plain: true }) : null;
         } catch (error: any) {
             if (error instanceof CustomError) throw error;
             throw new CustomError(error.message, constants.httpStatus.badRequest);
@@ -46,12 +48,13 @@ class UserService {
 
         try {
             const { count, rows } = await User.findAndCountAll({
+                where: { isActive: true },
                 attributes: { exclude: ['password'] },
                 limit,
                 offset,
                 order: [['createdAt', 'DESC']]
             });
-            
+
             return {
                 users: rows,
                 totalCount: count,

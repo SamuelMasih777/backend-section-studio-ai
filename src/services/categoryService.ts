@@ -15,7 +15,7 @@ class CategoryService {
                 offset,
                 order: [['sortOrder', 'ASC']]
             });
-            
+
             return {
                 categories: rows,
                 totalCount: count,
@@ -29,7 +29,9 @@ class CategoryService {
 
     async getCategoryByHandle(handle: string) {
         try {
-            const category = await Category.findByPk(handle);
+            const category = await Category.findOne({
+                where: { handle, isActive: true }
+            });
             if (!category) {
                 throw new CustomError('Category not found', constants.httpStatus.notFound);
             }
@@ -43,7 +45,7 @@ class CategoryService {
     async createCategory(categoryData: any) {
         try {
             const category = await Category.create(categoryData);
-            return category;
+            return category.get({ plain: true });
         } catch (error: any) {
             throw new CustomError(error.message, constants.httpStatus.badRequest);
         }
@@ -55,8 +57,8 @@ class CategoryService {
             if (!category) {
                 throw new CustomError('Category not found', constants.httpStatus.notFound);
             }
-            await category.update(categoryData);
-            return category;
+            const updatedCategory = await category.update(categoryData);
+            return updatedCategory.get({ plain: true });
         } catch (error: any) {
             if (error instanceof CustomError) throw error;
             throw new CustomError(error.message, constants.httpStatus.badRequest);
@@ -69,7 +71,7 @@ class CategoryService {
             if (!category) {
                 throw new CustomError('Category not found', constants.httpStatus.notFound);
             }
-            await category.destroy();
+            await category.update({ isActive: false });
             return { message: "Category deleted successfully" };
         } catch (error: any) {
             if (error instanceof CustomError) throw error;
