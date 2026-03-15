@@ -11,6 +11,9 @@ const processFile = multer({
     { name: "video", maxCount: 1 },
     { name: "imageFiles", maxCount: 3 },
     { name: "media", maxCount: 6 },
+    { name: "liquidFile", maxCount: 1 },
+    { name: "thumbnail", maxCount: 1 },
+    { name: "previewImages", maxCount: 10 }
     // Add more fields as needed based on user requirements
 ]);
 

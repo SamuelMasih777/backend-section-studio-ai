@@ -3,6 +3,7 @@ import sectionService from '../services/sectionService';
 import Result from '../models/result';
 import constants from '../models/constants';
 import logger from '../services/common/logger';
+import { uploadToCloudinary } from '../services/cloudinaryService';
 
 class SectionController {
     async getAllSections(req: Request, res: Response) {
@@ -57,7 +58,46 @@ class SectionController {
                 name: (req as any).user.display_name,
                 role: (req as any).user.role
             };
-            const data = await sectionService.createSection({ ...req.body, updatedBy });
+
+            const sectionFilesData: any[] = [];
+            const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+            
+            // Initialize media arrays in body if they don't exist
+            req.body.previewImages = [];
+
+            if (files) {
+                const allFiles = Object.entries(files);
+                for (const [fieldname, fileArray] of allFiles) {
+                    for (const file of fileArray) {
+                        const uploadResult = await uploadToCloudinary(file);
+                        const secureUrl = uploadResult.secure_url;
+                        
+                        let fileType = 'unknown';
+                        if (fieldname === 'liquidFile') {
+                            fileType = 'liquid';
+                        } else if (fieldname === 'video') {
+                            fileType = 'video';
+                            req.body.previewVideoUrl = secureUrl;
+                        } else if (fieldname === 'thumbnail') {
+                            fileType = 'image';
+                            req.body.thumbnailUrl = secureUrl;
+                        } else if (fieldname === 'previewImages' || fieldname === 'imageFiles' || fieldname === 'media') {
+                            fileType = 'image';
+                            req.body.previewImages.push(secureUrl);
+                        }
+                        
+                        sectionFilesData.push({
+                            filename: file.originalname,
+                            fileType: fileType,
+                            fileUrl: secureUrl,
+                            fileSize: file.size,
+                            sortOrder: sectionFilesData.length
+                        });
+                    }
+                }
+            }
+
+            const data = await sectionService.createSection({ ...req.body, updatedBy }, sectionFilesData);
             result.data = data;
             result.status = constants.httpStatus.created;
             result.message = "Section created successfully";
@@ -78,7 +118,50 @@ class SectionController {
                 name: (req as any).user.display_name,
                 role: (req as any).user.role
             };
-            const data = await sectionService.updateSection(id, { ...req.body, updatedBy });
+
+            const sectionFilesData: any[] = [];
+            const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+            
+            // Note: For updates, we might want to preserve existing previewImages if not provided in files,
+            // but usually a multipart update with files implies replacement for those fields.
+            if (files && (files.previewImages || files.imageFiles || files.media)) {
+                req.body.previewImages = [];
+            }
+
+            if (files) {
+                const allFiles = Object.entries(files);
+                for (const [fieldname, fileArray] of allFiles) {
+                    for (const file of fileArray) {
+                        const uploadResult = await uploadToCloudinary(file);
+                        const secureUrl = uploadResult.secure_url;
+                        
+                        let fileType = 'unknown';
+                        if (fieldname === 'liquidFile') {
+                            fileType = 'liquid';
+                        } else if (fieldname === 'video') {
+                            fileType = 'video';
+                            req.body.previewVideoUrl = secureUrl;
+                        } else if (fieldname === 'thumbnail') {
+                            fileType = 'image';
+                            req.body.thumbnailUrl = secureUrl;
+                        } else if (fieldname === 'previewImages' || fieldname === 'imageFiles' || fieldname === 'media') {
+                            fileType = 'image';
+                            if (!req.body.previewImages) req.body.previewImages = [];
+                            req.body.previewImages.push(secureUrl);
+                        }
+                        
+                        sectionFilesData.push({
+                            filename: file.originalname,
+                            fileType: fileType,
+                            fileUrl: secureUrl,
+                            fileSize: file.size,
+                            sortOrder: sectionFilesData.length
+                        });
+                    }
+                }
+            }
+
+            const data = await sectionService.updateSection(id, { ...req.body, updatedBy }, sectionFilesData);
             result.data = data;
             result.status = constants.httpStatus.success;
             result.message = "Section updated successfully";

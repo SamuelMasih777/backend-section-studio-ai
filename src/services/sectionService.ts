@@ -1,5 +1,6 @@
 import { Op } from 'sequelize';
 import Section from '../models/Section';
+import SectionFile from '../models/SectionFile';
 import CustomError from '../models/CustomError';
 import constants from '../models/constants';
 
@@ -62,9 +63,26 @@ class SectionService {
         }
     }
 
-    async createSection(sectionData: any) {
+    async createSection(sectionData: any, sectionFilesData?: any[]) {
         try {
-            const section = await Section.create(sectionData);
+            if (!sectionData.handle && sectionData.title) {
+                // Auto-generate handle from title if not provided
+                sectionData.handle = sectionData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString().slice(-4);
+            }
+            
+            // Apply normalization for stringified booleans and numbers
+            const normalizedData = this.normalizeData(sectionData);
+
+            const section = await Section.create(normalizedData);
+            
+            if (sectionFilesData && sectionFilesData.length > 0) {
+                const filesToCreate = sectionFilesData.map(file => ({
+                    ...file,
+                    sectionId: section.id
+                }));
+                await SectionFile.bulkCreate(filesToCreate);
+            }
+
             return section.get({ plain: true });
         } catch (error: any) {
             throw new CustomError(error.message, constants.httpStatus.badRequest);
@@ -99,7 +117,7 @@ class SectionService {
         return normalized;
     }
 
-    async updateSection(id: string, sectionData: any) {
+    async updateSection(id: string, sectionData: any, sectionFilesData?: any[]) {
         try {
             const section = await Section.findByPk(id);
             if (!section) {
@@ -108,6 +126,16 @@ class SectionService {
             
             const normalizedData = this.normalizeData(sectionData);
             const updatedSection = await section.update(normalizedData);
+
+            if (sectionFilesData && sectionFilesData.length > 0) {
+                const filesToCreate = sectionFilesData.map((file, idx) => ({
+                    ...file,
+                    sectionId: section.id,
+                    sortOrder: idx // temporary default sorting
+                }));
+                await SectionFile.bulkCreate(filesToCreate);
+            }
+
             return updatedSection.get({ plain: true });
         } catch (error: any) {
             if (error instanceof CustomError) throw error;
