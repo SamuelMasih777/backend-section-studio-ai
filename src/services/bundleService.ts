@@ -1,4 +1,5 @@
 import { Bundle, BundleItem, Section } from '../models';
+import { literal } from 'sequelize';
 import CustomError from '../models/CustomError';
 import constants from '../models/constants';
 
@@ -13,7 +14,20 @@ class BundleService {
                 where: { isActive: true },
                 limit,
                 offset,
-                order: [['createdAt', 'DESC']]
+                order: [['createdAt', 'DESC']],
+                attributes: {
+                    include: [
+                        [
+                            literal(`(
+                                SELECT COALESCE(array_agg("sectionId")::text[], ARRAY[]::text[])
+                                FROM "BundleItem"
+                                INNER JOIN "Section" ON "Section"."id" = "BundleItem"."sectionId"
+                                WHERE "BundleItem"."bundleId" = "Bundle"."id" AND "Section"."isActive" = true
+                            )`),
+                            'sectionIds'
+                        ]
+                    ]
+                }
             });
 
             return {
@@ -31,14 +45,19 @@ class BundleService {
         try {
             const bundle = await Bundle.findOne({
                 where: { id, isActive: true },
-                include: [{
-                    model: BundleItem,
-                    as: 'items',
-                    include: [{
-                        model: Section,
-                        as: 'section'
-                    }]
-                }]
+                attributes: {
+                    include: [
+                        [
+                            literal(`(
+                                SELECT COALESCE(array_agg("sectionId")::text[], ARRAY[]::text[])
+                                FROM "BundleItem"
+                                INNER JOIN "Section" ON "Section"."id" = "BundleItem"."sectionId"
+                                WHERE "BundleItem"."bundleId" = "Bundle"."id" AND "Section"."isActive" = true
+                            )`),
+                            'sectionIds'
+                        ]
+                    ]
+                }
             });
             if (!bundle) {
                 throw new CustomError('Bundle not found', constants.httpStatus.notFound);
@@ -68,14 +87,52 @@ class BundleService {
         }
     }
 
-    async updateBundle(id: string, bundleData: any) {
+    async updateBundle(id: string, bundleData: any, sectionIds?: string[]) {
         try {
             const bundle = await Bundle.findByPk(id);
             if (!bundle) {
                 throw new CustomError('Bundle not found', constants.httpStatus.notFound);
             }
-            const updatedBundle = await bundle.update(bundleData);
-            return updatedBundle.get({ plain: true });
+            await bundle.update(bundleData);
+
+            if (sectionIds !== undefined) {
+                let parsedSectionIds: string[] = [];
+                // Handle case where sectionIds might be a JSON string from form-data
+                if (typeof sectionIds === 'string') {
+                    try {
+                        parsedSectionIds = JSON.parse(sectionIds);
+                    } catch (e) {
+                        parsedSectionIds = [sectionIds];
+                    }
+                } else if (Array.isArray(sectionIds)) {
+                    parsedSectionIds = sectionIds;
+                }
+
+                const existingItems = await BundleItem.findAll({ where: { bundleId: id } });
+                const existingSectionIds = existingItems.map(item => item.sectionId);
+
+                const toAdd = parsedSectionIds.filter(sid => !existingSectionIds.includes(sid));
+                const toRemove = existingSectionIds.filter(sid => !parsedSectionIds.includes(sid));
+
+                if (toRemove.length > 0) {
+                    await BundleItem.destroy({ 
+                        where: { 
+                            bundleId: id, 
+                            sectionId: toRemove 
+                        } 
+                    });
+                }
+
+                if (toAdd.length > 0) {
+                    const bundleItems = toAdd.map(sectionId => ({
+                        bundleId: id,
+                        sectionId: sectionId
+                    }));
+                    await BundleItem.bulkCreate(bundleItems);
+                }
+            }
+
+            return this.getBundleById(id);
         } catch (error: any) {
             if (error instanceof CustomError) throw error;
             throw new CustomError(error.message, constants.httpStatus.badRequest);

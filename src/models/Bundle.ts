@@ -76,7 +76,7 @@ Bundle.init({
 });
 
 export interface BundleItemAttributes {
-    id?: number;
+    id?: string;
     bundleId: string;
     sectionId: string;
     updatedBy?: { name: string, role: string } | null;
@@ -85,7 +85,7 @@ export interface BundleItemAttributes {
 }
 
 export class BundleItem extends Model<BundleItemAttributes> implements BundleItemAttributes {
-    public id!: number;
+    public id!: string;
     public bundleId!: string;
     public sectionId!: string;
     public updatedBy!: { name: string, role: string } | null;
@@ -96,8 +96,8 @@ export class BundleItem extends Model<BundleItemAttributes> implements BundleIte
 
 BundleItem.init({
     id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
     bundleId: {

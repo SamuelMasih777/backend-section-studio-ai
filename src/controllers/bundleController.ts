@@ -72,11 +72,12 @@ class BundleController {
         const result = new Result();
         try {
             const id: any = req.params.id;
+            const { sectionIds, ...bundleData } = req.body;
             const updatedBy = {
                 name: (req as any).user.display_name,
                 role: (req as any).user.role
             };
-            const data = await bundleService.updateBundle(id, { ...req.body, updatedBy });
+            const data = await bundleService.updateBundle(id, { ...bundleData, updatedBy }, sectionIds);
             result.data = data;
             result.message = "Bundle updated successfully";
         } catch (error: any) {
